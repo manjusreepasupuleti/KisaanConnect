@@ -1,0 +1,1210 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>KisaanConnect — Procurement Ledger</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Fraunces:opsz,wght@9..144,400;9..144,500;9..144,600;9..144,700&family=IBM+Plex+Sans:wght@400;500;600;700&family=IBM+Plex+Mono:wght@500&display=swap" rel="stylesheet">
+<style>
+  :root{
+    --paper: #DCE8D2;
+    --paper-raised: #E9F1E1;
+    --ink: #23331C;
+    --ink-soft: #57694C;
+    --rule: #A9C29B;
+    --gold: #C0791F;
+    --gold-deep: #96591A;
+    --green: #3F6B2E;
+    --green-bg: #CFE0C0;
+    --red: #A6402A;
+    --red-bg: #F1DFD8;
+    --amber-bg: #F0DFAE;
+  }
+  *{box-sizing:border-box;}
+  html,body{margin:0;padding:0;}
+  body{
+    background-color:var(--paper);
+    background-image:
+      radial-gradient(circle at 92% 6%, rgba(63,107,46,0.07), transparent 42%),
+      url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='150' height='150'%3E%3Cg fill='none' stroke='%233F6B2E' stroke-width='1.3' stroke-opacity='0.09'%3E%3Cpath d='M22 132 Q24 98 19 64 Q17 42 26 20'/%3E%3Cpath d='M19 64 Q30 58 37 47'/%3E%3Cpath d='M19 76 Q7 71 3 60'/%3E%3Cpath d='M21 46 Q32 40 39 29'/%3E%3Cpath d='M21 52 Q9 47 5 36'/%3E%3Ccircle cx='26' cy='20' r='2'/%3E%3C/g%3E%3C/svg%3E");
+    background-repeat: no-repeat, repeat;
+    background-attachment: fixed, fixed;
+    color:var(--ink);
+    font-family:'IBM Plex Sans',sans-serif;
+    font-size:15px;
+    line-height:1.5;
+    min-height:100vh;
+  }
+  h1,h2,h3,.brand{font-family:'Fraunces',serif;}
+  .mono{font-family:'IBM Plex Mono',monospace;}
+
+  /* ---------- Top bar ---------- */
+  .topbar{
+    display:flex;align-items:center;justify-content:space-between;
+    padding:18px 28px;
+    border-bottom:2px solid var(--ink);
+    background:var(--paper);
+  }
+  .brand{font-size:22px;font-weight:600;letter-spacing:0.2px;color:var(--ink);}
+  .brand span{color:var(--gold-deep);}
+  .session{display:flex;align-items:center;gap:14px;font-size:13px;color:var(--ink-soft);}
+  .session strong{color:var(--ink);font-weight:600;}
+  .btn-link{background:none;border:none;color:var(--gold-deep);font-family:inherit;font-size:13px;cursor:pointer;text-decoration:underline;padding:0;}
+
+  .wrap{max-width:1040px;margin:0 auto;padding:36px 28px 80px;}
+
+  /* ---------- Login ---------- */
+  .login-wrap{max-width:520px;margin:60px auto;padding:0 20px;}
+  .cover{
+    background:var(--paper-raised);
+    border:2px solid var(--ink);
+    padding:40px 36px;
+  }
+  .cover h1{font-size:34px;margin:0 0 6px;font-weight:600;}
+  .cover .tag{color:var(--ink-soft);margin:0 0 30px;font-size:14.5px;}
+  .role-row{display:flex;gap:10px;margin-bottom:22px;}
+  .role-btn{
+    flex:1;padding:12px 10px;border:1.5px solid var(--rule);background:var(--paper);
+    font-family:'IBM Plex Sans';font-size:13.5px;font-weight:600;color:var(--ink-soft);
+    cursor:pointer;text-align:center;
+  }
+  .role-btn.active{border-color:var(--ink);background:var(--ink);color:var(--paper-raised);}
+  label{display:block;font-size:12.5px;color:var(--ink-soft);margin:16px 0 5px;font-weight:600;}
+  input,select{
+    width:100%;padding:10px 11px;border:1.5px solid var(--rule);background:var(--paper);
+    font-family:'IBM Plex Sans';font-size:14.5px;color:var(--ink);border-radius:3px;
+  }
+  input:focus,select:focus{outline:2px solid var(--gold);outline-offset:1px;border-color:var(--gold);}
+  .btn{
+    margin-top:26px;width:100%;padding:12px;border:none;background:var(--ink);color:var(--paper-raised);
+    font-family:'IBM Plex Sans';font-weight:600;font-size:14.5px;cursor:pointer;border-radius:3px;
+  }
+  .btn:hover{background:var(--gold-deep);}
+  .btn.secondary{background:transparent;color:var(--ink);border:1.5px solid var(--ink);}
+  .btn.secondary:hover{background:var(--ink);color:var(--paper-raised);}
+  .hint{font-size:12px;color:var(--ink-soft);margin-top:16px;line-height:1.5;}
+
+  /* ---------- Section headers ---------- */
+  .section-title{display:flex;align-items:baseline;gap:10px;margin:0 0 4px;}
+  .section-title h2{font-size:20px;margin:0;font-weight:600;}
+  .section-sub{color:var(--ink-soft);font-size:13.5px;margin:0 0 20px;}
+  .divider{border:none;border-top:1.5px solid var(--ink);margin:34px 0 24px;}
+
+  /* ---------- Panels ---------- */
+  .panel{background:var(--paper-raised);border:1.5px solid var(--rule);padding:22px 24px;margin-bottom:22px;}
+  .panel.accent{border-left:4px solid var(--gold);}
+  .grid2{display:grid;grid-template-columns:1fr 1fr;gap:0 18px;}
+  @media(max-width:640px){.grid2{grid-template-columns:1fr;}}
+
+  /* ---------- Token card / ledger row ---------- */
+  .token-card{border:1.5px solid var(--rule);background:var(--paper-raised);padding:18px 20px;margin-bottom:16px;}
+  .token-head{display:flex;justify-content:space-between;align-items:flex-start;flex-wrap:wrap;gap:8px;margin-bottom:14px;}
+  .token-id{font-family:'IBM Plex Mono';font-size:13px;color:var(--gold-deep);font-weight:500;}
+  .token-meta{font-size:13.5px;color:var(--ink-soft);margin-top:2px;}
+  .pill{
+    display:inline-block;padding:3px 10px;font-size:11.5px;font-weight:600;border-radius:20px;
+    text-transform:uppercase;letter-spacing:0.3px;
+  }
+  .pill.ok{background:var(--green-bg);color:var(--green);}
+  .pill.mid{background:var(--amber-bg);color:var(--gold-deep);}
+  .pill.alert{background:var(--red-bg);color:var(--red);}
+
+  /* ---------- Stepper ---------- */
+  .stepper{display:flex;align-items:flex-start;margin:14px 0 4px;}
+  .step{flex:1;text-align:center;position:relative;}
+  .step .dot{
+    width:15px;height:15px;border-radius:50%;background:var(--paper);border:2px solid var(--rule);
+    margin:0 auto 6px;position:relative;z-index:1;
+  }
+  .step.done .dot{background:var(--green);border-color:var(--green);}
+  .step.current .dot{background:var(--gold);border-color:var(--gold);}
+  .step .line{position:absolute;top:6px;left:-50%;width:100%;height:2px;background:var(--rule);z-index:0;}
+  .step.done .line, .step.current .line{background:var(--green);}
+  .step:first-child .line{display:none;}
+  .step .label{font-size:11px;color:var(--ink-soft);font-weight:600;}
+  .step.done .label, .step.current .label{color:var(--ink);}
+  .step .time{font-size:10.5px;color:var(--ink-soft);margin-top:2px;}
+
+  /* ---------- Officer table ---------- */
+  table{width:100%;border-collapse:collapse;font-size:13.5px;}
+  th{text-align:left;font-size:11.5px;text-transform:uppercase;letter-spacing:0.3px;color:var(--ink-soft);
+     border-bottom:2px solid var(--ink);padding:8px 10px;}
+  td{padding:10px;border-bottom:1px solid var(--rule);vertical-align:middle;}
+  tr:hover td{background:rgba(192,121,31,0.06);}
+  .action-btn{
+    padding:6px 11px;font-size:12px;border:1.5px solid var(--ink);background:transparent;color:var(--ink);
+    cursor:pointer;border-radius:3px;font-family:'IBM Plex Sans';font-weight:600;
+  }
+  .action-btn:hover{background:var(--ink);color:var(--paper-raised);}
+  .action-btn:disabled{opacity:0.35;cursor:not-allowed;}
+
+  /* ---------- Stats ---------- */
+  .stats-row{display:grid;grid-template-columns:repeat(4,1fr);gap:16px;margin-bottom:24px;}
+  @media(max-width:700px){.stats-row{grid-template-columns:repeat(2,1fr);}}
+  .stat{border:1.5px solid var(--rule);padding:16px 16px;background:var(--paper-raised);}
+  .stat .num{font-family:'Fraunces';font-size:30px;font-weight:600;line-height:1;}
+  .stat .lab{font-size:11.5px;color:var(--ink-soft);margin-top:6px;text-transform:uppercase;letter-spacing:0.3px;}
+  .stat.alertnum .num{color:var(--red);}
+
+  .serving-panel{border:1.5px solid var(--ink);background:var(--paper-raised);margin-bottom:26px;}
+  .serving-center{padding:14px 20px;border-bottom:1.5px solid var(--rule);}
+  .serving-center:last-child{border-bottom:none;}
+  .serving-center .cname{font-size:12px;color:var(--ink-soft);text-transform:uppercase;letter-spacing:0.3px;margin-bottom:8px;}
+  .serving-row{display:flex;gap:28px;flex-wrap:wrap;align-items:baseline;}
+  .serving-item .k{font-size:11.5px;color:var(--ink-soft);}
+  .serving-item .v{font-family:'IBM Plex Mono';font-size:17px;font-weight:500;color:var(--ink);}
+  .serving-item .v.match{color:var(--green);}
+  .serving-note{font-size:12.5px;color:var(--gold-deep);font-weight:600;margin-top:4px;}
+
+  .rate-tag{
+    display:inline-flex;align-items:center;gap:6px;border:1.5px solid var(--rule);background:var(--paper);
+    padding:5px 11px;border-radius:20px;font-size:12.5px;margin:0 8px 8px 0;
+  }
+  .rate-tag .amt{font-family:'IBM Plex Mono';font-weight:500;color:var(--gold-deep);}
+
+  .callout{border-left:3px solid var(--rule);padding:8px 12px;margin-top:10px;font-size:13px;}
+  .callout.good{border-color:var(--green);background:var(--green-bg);}
+  .callout.bad{border-color:var(--red);background:var(--red-bg);}
+
+  .pay-block{border-top:1.5px dashed var(--rule);margin-top:16px;padding-top:14px;}
+  .pay-amt{font-family:'Fraunces';font-size:24px;font-weight:600;margin-bottom:10px;}
+  .pay-choice{display:flex;gap:10px;margin-bottom:4px;}
+  .pay-choice .action-btn{flex:1;padding:9px;}
+  .bank-form{display:none;margin-top:12px;border:1.5px solid var(--rule);padding:14px;background:var(--paper);}
+  .bank-form.show{display:block;}
+  .pay-status{font-size:13.5px;margin-top:6px;}
+  .pay-status.processing{color:var(--gold-deep);font-weight:600;}
+  .pay-status.done{color:var(--green);font-weight:600;}
+
+  .row-input{width:64px;padding:5px 6px;font-size:12.5px;margin-right:4px;display:inline-block;}
+  .row-form{display:flex;align-items:center;flex-wrap:wrap;gap:4px;}
+  .row-form select{width:auto;padding:5px 6px;font-size:12.5px;margin-right:4px;}
+
+  .status-pill{padding:4px 13px;border-radius:20px;font-size:12px;font-weight:700;text-transform:uppercase;letter-spacing:0.4px;}
+  .status-pill.open{background:var(--green-bg);color:var(--green);}
+  .status-pill.closed{background:var(--red-bg);color:var(--red);}
+  .status-panel{display:flex;align-items:center;justify-content:space-between;padding:14px 20px;flex-wrap:wrap;gap:10px;}
+  .eta-line{font-size:12.5px;color:var(--ink-soft);margin-top:8px;}
+  .eta-line strong{color:var(--ink);font-family:'IBM Plex Mono';}
+
+  .staff-row{display:flex;justify-content:space-between;align-items:center;border:1.5px solid var(--rule);background:var(--paper-raised);padding:12px 16px;margin-bottom:10px;font-size:13.5px;}
+  .staff-row .meta{color:var(--ink-soft);font-size:12px;margin-top:2px;}
+  .biometric-row{text-align:center;margin:18px 0 10px;color:var(--ink-soft);font-size:12.5px;}
+
+  .empty{padding:30px 10px;text-align:center;color:var(--ink-soft);font-size:14px;border:1.5px dashed var(--rule);}
+  .toast{
+    position:fixed;bottom:24px;left:50%;transform:translateX(-50%);
+    background:var(--ink);color:var(--paper-raised);padding:11px 20px;border-radius:4px;
+    font-size:13.5px;opacity:0;pointer-events:none;transition:opacity 0.25s;z-index:50;
+  }
+  .toast.show{opacity:1;}
+</style>
+</head>
+<body>
+
+<div id="loginScreen" class="login-wrap">
+  <div class="cover">
+    <h1>Kisaan<span>Connect</span></h1>
+    <p class="tag">See the line before you stand in it. Book a slot, track your token, know before you go.</p>
+    <div class="role-row">
+      <button class="role-btn active" id="roleFarmerBtn" onclick="setRole('farmer')">I'm a Farmer</button>
+      <button class="role-btn" id="roleOfficerBtn" onclick="setRole('officer')">I'm Center Staff</button>
+      <button class="role-btn" id="roleAdminBtn" onclick="setRole('admin')">Admin</button>
+    </div>
+
+    <div id="farmerLoginFields">
+      <label for="fName">Your name</label>
+      <input id="fName" placeholder="e.g. Ramesh Kumar">
+      <label for="fPhone">Mobile number</label>
+      <input id="fPhone" placeholder="10-digit number" maxlength="10">
+    </div>
+
+    <div id="officerLoginFields" style="display:none;">
+      <label for="oUsername">Username</label>
+      <input id="oUsername" placeholder="assigned by your admin">
+      <label for="oPassword">Password</label>
+      <input type="password" id="oPassword" placeholder="assigned by your admin">
+      <p class="hint">Accounts are created by the admin — you can't sign in here without one.</p>
+    </div>
+
+    <div id="adminLoginFields" style="display:none;">
+      <div id="adminSetupBlock" style="display:none;">
+        <p class="hint" style="margin-top:0;">First time here — set the admin password. After this, you'll be able to sign in with Face ID / fingerprint instead.</p>
+        <label for="aNewPass">New password</label>
+        <input type="password" id="aNewPass">
+        <label for="aNewPass2">Confirm password</label>
+        <input type="password" id="aNewPass2">
+      </div>
+      <div id="adminLoginBlock" style="display:none;">
+        <button class="btn secondary" type="button" onclick="biometricLogin()">Use Face ID / Fingerprint</button>
+        <div class="biometric-row">— or use your password —</div>
+        <label for="aPass">Admin password</label>
+        <input type="password" id="aPass">
+      </div>
+    </div>
+
+    <button class="btn" onclick="login()">Continue</button>
+    <p class="hint">This is a working demo — slot booking, token status and alerts are simulated, so nothing here books a real procurement slot yet.</p>
+  </div>
+</div>
+
+<div id="appScreen" style="display:none;">
+  <div class="topbar">
+    <div class="brand">Kisaan<span>Connect</span></div>
+    <div class="session">
+      <span>Signed in as <strong id="sessionName"></strong></span>
+      <button class="btn-link" onclick="logout()">Switch user</button>
+    </div>
+  </div>
+
+  <div class="wrap">
+
+    <!-- FARMER VIEW -->
+    <div id="farmerView" style="display:none;">
+      <div id="nowServingWrap"></div>
+      <div id="farmerRateWrap"></div>
+
+      <div class="section-title"><h2>Book a procurement slot</h2></div>
+      <p class="section-sub">Pick your crop, center and preferred date. You'll get a token straight away — no standing in line to find out.</p>
+
+      <div class="panel accent">
+        <div class="grid2">
+          <div>
+            <label for="bCrop">Crop</label>
+            <select id="bCrop"></select>
+          </div>
+          <div>
+            <label for="bCenter">Procurement center</label>
+            <select id="bCenter"></select>
+          </div>
+        </div>
+        <div class="grid2">
+          <div>
+            <label for="bDate">Preferred date</label>
+            <input type="date" id="bDate">
+          </div>
+          <div>
+            <label for="bQty">Expected quantity (quintals)</label>
+            <input type="number" id="bQty" min="1" placeholder="e.g. 25">
+          </div>
+        </div>
+        <button class="btn" style="max-width:220px;" onclick="bookSlot()">Book slot &amp; get token</button>
+      </div>
+
+      <hr class="divider">
+      <div class="section-title"><h2>Your tokens</h2></div>
+      <p class="section-sub">Live status of everything you've registered.</p>
+      <div id="farmerTokens"></div>
+    </div>
+
+    <!-- OFFICER VIEW -->
+    <div id="officerView" style="display:none;">
+      <div class="section-title"><h2 id="officerCenterTitle">Today's queue</h2></div>
+      <p class="section-sub">Tokens at your center, ordered by what needs attention first.</p>
+
+      <div class="panel status-panel" id="statusPanel"></div>
+
+      <div class="stats-row" id="statsRow"></div>
+
+      <div class="panel accent" id="ratePanel">
+        <div class="section-title" style="margin-bottom:2px;"><h2 style="font-size:16px;">Today's rate</h2></div>
+        <p class="section-sub" style="margin-bottom:14px;">Set today's price per kg for each crop. Farmers see this as soon as it's set, and it's used to work out the payout when a token is dispatched.</p>
+        <div class="grid2">
+          <div>
+            <label for="rCrop">Crop</label>
+            <select id="rCrop"></select>
+          </div>
+          <div>
+            <label for="rPrice">Price (₹ per kg)</label>
+            <input type="number" id="rPrice" min="0" step="0.5" placeholder="e.g. 21.5">
+          </div>
+        </div>
+        <button class="btn secondary" style="max-width:160px;" onclick="setRate()">Set rate</button>
+        <div id="rateList" style="margin-top:14px;"></div>
+      </div>
+
+      <table>
+        <thead>
+          <tr>
+            <th>Token</th>
+            <th>Farmer</th>
+            <th>Crop / Qty</th>
+            <th>Status</th>
+            <th>Time in status</th>
+            <th>Payment</th>
+            <th>Next action</th>
+          </tr>
+        </thead>
+        <tbody id="officerTableBody"></tbody>
+      </table>
+      <div id="officerEmpty" class="empty" style="display:none;margin-top:16px;">No tokens scheduled at this center yet.</div>
+    </div>
+
+    <!-- ADMIN VIEW -->
+    <div id="adminView" style="display:none;">
+      <div class="section-title"><h2>Center staff accounts</h2></div>
+      <p class="section-sub">Create sign-in credentials for center staff. Only accounts created here can sign in as staff, so the queue data stays with people you've approved.</p>
+
+      <div class="panel accent">
+        <div class="grid2">
+          <div>
+            <label for="sName">Staff name</label>
+            <input id="sName" placeholder="e.g. S. Patil">
+          </div>
+          <div>
+            <label for="sCenter">Assign to center</label>
+            <select id="sCenter"></select>
+          </div>
+        </div>
+        <div class="grid2">
+          <div>
+            <label for="sUsername">Username</label>
+            <input id="sUsername" placeholder="e.g. spatil">
+          </div>
+          <div>
+            <label for="sPassword">Password</label>
+            <input type="password" id="sPassword">
+          </div>
+        </div>
+        <button class="btn" style="max-width:200px;" onclick="createStaffAccount()">Create account</button>
+      </div>
+
+      <hr class="divider">
+      <div class="section-title"><h2>Existing accounts</h2></div>
+      <div id="staffList"></div>
+    </div>
+
+  </div>
+</div>
+
+<div class="toast" id="toast"></div>
+
+<script>
+/* ---------------- Static reference data ---------------- */
+const CENTERS = [
+  {id:'C1', name:'Karimnagar Mandi Yard'},
+  {id:'C2', name:'Warangal Procurement Center'},
+  {id:'C3', name:'Nizamabad Grain Hub'},
+  {id:'C4', name:'Adilabad Collection Point'},
+];
+const CROPS = ['Paddy (Rice)','Wheat','Maize','Cotton','Soybean','Mustard','Chana (Gram)'];
+const STATES = ['Registered','Gate_Entry','Weighed','Graded','Dispatched'];
+const STATE_LABELS = {Registered:'Registered',Gate_Entry:'Gate Entry',Weighed:'Weighed',Graded:'Graded',Dispatched:'Dispatched'};
+const SLA_MINUTES = 45; // alert threshold per state
+const MOISTURE_LIMIT = 14; // % — above this the crop is flagged as not acceptable
+const WEIGHT_TOLERANCE = 0.05; // 5% difference from farmer's declared quantity triggers a mismatch notice
+
+let session = null; // {role, name, phone|centerId}
+let tokensCache = [];
+let ratesCache = {}; // { "centerId|YYYY-MM-DD": { cropName: price } }
+let statusCache = {}; // { centerId: 'open'|'closed' }
+let staffCache = []; // [{username, passHash, name, centerId}]
+let adminAuthCache = {passwordSet:false, passHash:null, credentialId:null};
+
+/* ---------------- Init ---------------- */
+function populateSelects(){
+  const bCrop=document.getElementById('bCrop'), bCenter=document.getElementById('bCenter'), rCrop=document.getElementById('rCrop'), sCenter=document.getElementById('sCenter');
+  CROPS.forEach(c=>{
+    bCrop.innerHTML+=`<option value="${c}">${c}</option>`;
+    rCrop.innerHTML+=`<option value="${c}">${c}</option>`;
+  });
+  CENTERS.forEach(c=>{
+    bCenter.innerHTML+=`<option value="${c.id}">${c.name}</option>`;
+    sCenter.innerHTML+=`<option value="${c.id}">${c.name}</option>`;
+  });
+  document.getElementById('bDate').value = new Date().toISOString().slice(0,10);
+}
+populateSelects();
+
+function setRole(role){
+  document.getElementById('roleFarmerBtn').classList.toggle('active', role==='farmer');
+  document.getElementById('roleOfficerBtn').classList.toggle('active', role==='officer');
+  document.getElementById('roleAdminBtn').classList.toggle('active', role==='admin');
+  document.getElementById('farmerLoginFields').style.display = role==='farmer' ? 'block':'none';
+  document.getElementById('officerLoginFields').style.display = role==='officer' ? 'block':'none';
+  document.getElementById('adminLoginFields').style.display = role==='admin' ? 'block':'none';
+  window._pendingRole = role;
+  if(role==='admin') prepareAdminLogin();
+}
+window._pendingRole = 'farmer';
+
+async function prepareAdminLogin(){
+  await loadAdminAuth();
+  document.getElementById('adminSetupBlock').style.display = adminAuthCache.passwordSet ? 'none' : 'block';
+  document.getElementById('adminLoginBlock').style.display = adminAuthCache.passwordSet ? 'block' : 'none';
+}
+
+async function login(){
+  const role = window._pendingRole;
+  if(role==='farmer'){
+    const name=document.getElementById('fName').value.trim();
+    const phone=document.getElementById('fPhone').value.trim();
+    if(!name || phone.length<6){ toast('Enter your name and mobile number'); return; }
+    session = {role:'farmer', name, phone};
+    unlockAudio();
+  } else if(role==='officer'){
+    const username=document.getElementById('oUsername').value.trim();
+    const password=document.getElementById('oPassword').value;
+    if(!username || !password){ toast('Enter your username and password'); return; }
+    await loadStaffAccounts();
+    const hash = await hashText(password);
+    const acc = staffCache.find(a=>a.username===username && a.passHash===hash);
+    if(!acc){ toast('Invalid username or password'); return; }
+    session = {role:'officer', name:acc.name, centerId:acc.centerId, username};
+  } else {
+    const ok = await adminLoginFlow();
+    if(!ok) return;
+    session = {role:'admin', name:'Admin'};
+  }
+
+  document.getElementById('loginScreen').style.display='none';
+  document.getElementById('appScreen').style.display='block';
+  document.getElementById('sessionName').textContent = session.name + (session.role==='officer' ? ' · '+CENTERS.find(c=>c.id===session.centerId).name : '');
+  document.getElementById('farmerView').style.display = session.role==='farmer' ? 'block':'none';
+  document.getElementById('officerView').style.display = session.role==='officer' ? 'block':'none';
+  document.getElementById('adminView').style.display = session.role==='admin' ? 'block':'none';
+  if(session.role==='officer'){
+    document.getElementById('officerCenterTitle').textContent = "Today's queue — "+CENTERS.find(c=>c.id===session.centerId).name;
+  }
+  refresh();
+}
+
+async function adminLoginFlow(){
+  await loadAdminAuth();
+  if(!adminAuthCache.passwordSet){
+    const p1=document.getElementById('aNewPass').value;
+    const p2=document.getElementById('aNewPass2').value;
+    if(!p1 || p1.length<4){ toast('Choose a password with at least 4 characters'); return false; }
+    if(p1!==p2){ toast("Passwords don't match"); return false; }
+    adminAuthCache.passHash = await hashText(p1);
+    adminAuthCache.passwordSet = true;
+    await saveAdminAuth(adminAuthCache);
+    await registerBiometric();
+    toast('Admin password set');
+    return true;
+  }
+  const pass = document.getElementById('aPass').value;
+  if(pass){
+    const hash = await hashText(pass);
+    if(hash !== adminAuthCache.passHash){ toast('Incorrect password'); return false; }
+    return true;
+  }
+  toast('Enter your password, or use Face ID / Fingerprint');
+  return false;
+}
+
+function logout(){
+  session=null;
+  document.getElementById('appScreen').style.display='none';
+  document.getElementById('farmerView').style.display='none';
+  document.getElementById('officerView').style.display='none';
+  document.getElementById('adminView').style.display='none';
+  document.getElementById('loginScreen').style.display='block';
+}
+
+/* ---------------- Storage helpers ---------------- */
+async function loadTokens(){
+  try{
+    const res = await window.storage.get('amt_tokens', true);
+    tokensCache = res && res.value ? JSON.parse(res.value) : [];
+  }catch(e){
+    tokensCache = [];
+  }
+  return tokensCache;
+}
+async function saveTokens(tokens){
+  tokensCache = tokens;
+  try{
+    await window.storage.set('amt_tokens', JSON.stringify(tokens), true);
+  }catch(e){
+    toast('Could not save — try again');
+  }
+}
+function nextTokenId(tokens){
+  const n = tokens.length + 1;
+  return 'AMT-'+new Date().getFullYear()+'-'+String(n).padStart(4,'0');
+}
+
+function todayStr(){ return new Date().toISOString().slice(0,10); }
+function rateKey(centerId){ return centerId+'|'+todayStr(); }
+
+async function loadRates(){
+  try{
+    const res = await window.storage.get('daily_rates', true);
+    ratesCache = res && res.value ? JSON.parse(res.value) : {};
+  }catch(e){
+    ratesCache = {};
+  }
+  return ratesCache;
+}
+async function saveRates(rates){
+  ratesCache = rates;
+  try{
+    await window.storage.set('daily_rates', JSON.stringify(rates), true);
+  }catch(e){
+    toast('Could not save rate — try again');
+  }
+}
+function getRate(centerId, crop){
+  const day = ratesCache[rateKey(centerId)];
+  return day && day[crop] != null ? day[crop] : null;
+}
+async function setRate(){
+  const crop = document.getElementById('rCrop').value;
+  const price = Number(document.getElementById('rPrice').value);
+  if(!price || price<=0){ toast('Enter a valid price'); return; }
+  const rates = await loadRates();
+  const key = rateKey(session.centerId);
+  if(!rates[key]) rates[key] = {};
+  rates[key][crop] = price;
+  await saveRates(rates);
+  document.getElementById('rPrice').value = '';
+  toast(crop+' rate set to ₹'+price+'/kg');
+  renderRatePanel();
+  renderOfficerTable();
+}
+function renderRatePanel(){
+  const key = rateKey(session.centerId);
+  const day = ratesCache[key] || {};
+  const el = document.getElementById('rateList');
+  const entries = Object.entries(day);
+  el.innerHTML = entries.length
+    ? entries.map(([crop,price])=>`<span class="rate-tag">${crop} <span class="amt">₹${price}/kg</span></span>`).join('')
+    : '<span style="font-size:12.5px;color:var(--ink-soft);">No rates set yet today.</span>';
+}
+
+/* ---------------- Center status (open/closed) ---------------- */
+async function loadCenterStatus(){
+  try{
+    const res = await window.storage.get('center_status', true);
+    statusCache = res && res.value ? JSON.parse(res.value) : {};
+  }catch(e){
+    statusCache = {};
+  }
+  return statusCache;
+}
+async function saveCenterStatus(status){
+  statusCache = status;
+  try{
+    await window.storage.set('center_status', JSON.stringify(status), true);
+  }catch(e){
+    toast('Could not save — try again');
+  }
+}
+function centerIsOpen(centerId){
+  return statusCache[centerId] !== 'closed'; // open by default
+}
+async function toggleCenterStatus(){
+  const status = await loadCenterStatus();
+  status[session.centerId] = centerIsOpen(session.centerId) ? 'closed' : 'open';
+  await saveCenterStatus(status);
+  toast('Center marked '+status[session.centerId]);
+  renderStatusPanel();
+}
+function renderStatusPanel(){
+  const open = centerIsOpen(session.centerId);
+  document.getElementById('statusPanel').innerHTML = `
+    <div>
+      <div style="font-size:12px;color:var(--ink-soft);text-transform:uppercase;letter-spacing:0.3px;margin-bottom:6px;">Procurement status</div>
+      <span class="status-pill ${open?'open':'closed'}">${open?'Open':'Closed'}</span>
+    </div>
+    <button class="action-btn" onclick="toggleCenterStatus()">${open?'Close for today':'Reopen'}</button>
+  `;
+}
+
+/* ---------------- Password hashing (SHA-256, client-side demo only) ---------------- */
+async function hashText(text){
+  const buf = await crypto.subtle.digest('SHA-256', new TextEncoder().encode(text));
+  return Array.from(new Uint8Array(buf)).map(b=>b.toString(16).padStart(2,'0')).join('');
+}
+
+/* ---------------- Admin auth + staff accounts ---------------- */
+async function loadAdminAuth(){
+  try{
+    const res = await window.storage.get('admin_auth', true);
+    adminAuthCache = res && res.value ? JSON.parse(res.value) : {passwordSet:false, passHash:null, credentialId:null};
+  }catch(e){
+    adminAuthCache = {passwordSet:false, passHash:null, credentialId:null};
+  }
+  return adminAuthCache;
+}
+async function saveAdminAuth(auth){
+  adminAuthCache = auth;
+  try{
+    await window.storage.set('admin_auth', JSON.stringify(auth), true);
+  }catch(e){
+    toast('Could not save — try again');
+  }
+}
+async function registerBiometric(){
+  if(!window.PublicKeyCredential){ return; }
+  try{
+    const cred = await navigator.credentials.create({
+      publicKey:{
+        challenge: crypto.getRandomValues(new Uint8Array(32)),
+        rp:{name:'KisaanConnect'},
+        user:{id:crypto.getRandomValues(new Uint8Array(16)), name:'admin', displayName:'Admin'},
+        pubKeyCredParams:[{type:'public-key', alg:-7}],
+        authenticatorSelection:{authenticatorAttachment:'platform', userVerification:'required'},
+        timeout:60000
+      }
+    });
+    if(cred){
+      adminAuthCache.credentialId = btoa(String.fromCharCode(...new Uint8Array(cred.rawId)));
+      await saveAdminAuth(adminAuthCache);
+    }
+  }catch(e){
+    // Platform authenticator unavailable in this environment — password remains the fallback.
+  }
+}
+async function biometricLogin(){
+  await loadAdminAuth();
+  if(!window.PublicKeyCredential || !adminAuthCache.credentialId){
+    toast('Face ID / fingerprint isn\'t set up on this device — use your password.');
+    return;
+  }
+  try{
+    const cred = await navigator.credentials.get({
+      publicKey:{
+        challenge: crypto.getRandomValues(new Uint8Array(32)),
+        allowCredentials:[{id: Uint8Array.from(atob(adminAuthCache.credentialId), c=>c.charCodeAt(0)), type:'public-key'}],
+        userVerification:'required',
+        timeout:60000
+      }
+    });
+    if(cred){
+      session = {role:'admin', name:'Admin'};
+      document.getElementById('loginScreen').style.display='none';
+      document.getElementById('appScreen').style.display='block';
+      document.getElementById('sessionName').textContent = 'Admin';
+      document.getElementById('adminView').style.display='block';
+      refresh();
+    }
+  }catch(e){
+    toast('Biometric check failed or was cancelled — use your password instead.');
+  }
+}
+
+async function loadStaffAccounts(){
+  try{
+    const res = await window.storage.get('staff_accounts', true);
+    staffCache = res && res.value ? JSON.parse(res.value) : [];
+  }catch(e){
+    staffCache = [];
+  }
+  return staffCache;
+}
+async function saveStaffAccounts(list){
+  staffCache = list;
+  try{
+    await window.storage.set('staff_accounts', JSON.stringify(list), true);
+  }catch(e){
+    toast('Could not save — try again');
+  }
+}
+async function createStaffAccount(){
+  const name=document.getElementById('sName').value.trim();
+  const centerId=document.getElementById('sCenter').value;
+  const username=document.getElementById('sUsername').value.trim();
+  const password=document.getElementById('sPassword').value;
+  if(!name || !username || !password){ toast('Fill in every field'); return; }
+  const list = await loadStaffAccounts();
+  if(list.some(a=>a.username===username)){ toast('That username is already taken'); return; }
+  const passHash = await hashText(password);
+  list.push({name, centerId, username, passHash});
+  await saveStaffAccounts(list);
+  document.getElementById('sName').value='';
+  document.getElementById('sUsername').value='';
+  document.getElementById('sPassword').value='';
+  toast('Account created for '+name);
+  renderStaffList();
+}
+async function removeStaffAccount(username){
+  const list = await loadStaffAccounts();
+  await saveStaffAccounts(list.filter(a=>a.username!==username));
+  toast('Account removed');
+  renderStaffList();
+}
+function renderStaffList(){
+  const el = document.getElementById('staffList');
+  if(staffCache.length===0){ el.innerHTML = '<div class="empty">No staff accounts yet — create one above.</div>'; return; }
+  el.innerHTML = staffCache.map(a=>{
+    const center = CENTERS.find(c=>c.id===a.centerId);
+    return `<div class="staff-row">
+      <div>
+        <div>${a.name}</div>
+        <div class="meta">@${a.username} · ${center ? center.name : ''}</div>
+      </div>
+      <button class="action-btn" onclick="removeStaffAccount('${a.username}')">Remove</button>
+    </div>`;
+  }).join('');
+}
+
+/* ---------------- Booking (farmer) ---------------- */
+async function bookSlot(){
+  const crop=document.getElementById('bCrop').value;
+  const centerId=document.getElementById('bCenter').value;
+  const date=document.getElementById('bDate').value;
+  const qty=document.getElementById('bQty').value;
+  if(!qty || qty<=0){ toast('Enter an expected quantity'); return; }
+  await loadCenterStatus();
+  if(!centerIsOpen(centerId)){ toast('This center is closed for today — try another center or check back later'); return; }
+
+  const tokens = await loadTokens();
+  const now = new Date().toISOString();
+  const token = {
+    id: nextTokenId(tokens),
+    farmerName: session.name,
+    farmerPhone: session.phone,
+    crop, centerId, slotDate: date, qty: Number(qty),
+    weight: null, grade: null,
+    moisture: null, moistureOk: null,
+    weightMismatch: null, weightNote: null,
+    price: null, amount: null,
+    paymentStatus: null, paymentMode: null, bankDetails: null, paymentCompletedAt: null,
+    status: 'Registered',
+    history: [{status:'Registered', at: now}],
+    createdAt: now
+  };
+  tokens.push(token);
+  await saveTokens(tokens);
+  toast('Slot booked — token '+token.id);
+  renderFarmerTokens();
+}
+
+/* ---------------- Rendering: farmer ---------------- */
+function timeAgo(iso){
+  const mins = Math.round((Date.now() - new Date(iso).getTime())/60000);
+  if(mins<1) return 'just now';
+  if(mins<60) return mins+' min ago';
+  const hrs = Math.floor(mins/60);
+  return hrs+'h '+(mins%60)+'m ago';
+}
+function fmtTime(iso){
+  return new Date(iso).toLocaleString('en-IN',{day:'2-digit',month:'short',hour:'2-digit',minute:'2-digit'});
+}
+
+function stepperHtml(token){
+  const currentIdx = STATES.indexOf(token.status);
+  return '<div class="stepper">' + STATES.map((s,i)=>{
+    const h = token.history.find(x=>x.status===s);
+    const cls = i<currentIdx ? 'done' : (i===currentIdx ? 'current' : '');
+    return `<div class="step ${cls}"><div class="line"></div><div class="dot"></div>
+      <div class="label">${STATE_LABELS[s]}</div>
+      <div class="time">${h ? fmtTime(h.at) : ''}</div></div>`;
+  }).join('') + '</div>';
+}
+
+function alertPillFor(token){
+  if(token.status==='Dispatched') return '<span class="pill ok">Completed</span>';
+  const last = token.history[token.history.length-1];
+  const mins = (Date.now() - new Date(last.at).getTime())/60000;
+  if(mins > SLA_MINUTES) return '<span class="pill alert">Delayed</span>';
+  if(mins > SLA_MINUTES*0.6) return '<span class="pill mid">Watch</span>';
+  return '<span class="pill ok">On track</span>';
+}
+
+function nowServingFor(centerId, tokens){
+  const atCenter = tokens.filter(t=>t.centerId===centerId && t.status!=='Dispatched');
+  const inProgress = atCenter.filter(t=>t.status!=='Registered')
+    .sort((a,b)=> new Date(b.history[b.history.length-1].at) - new Date(a.history[a.history.length-1].at));
+  if(inProgress.length) return {token: inProgress[0], stage:'serving'};
+  const waiting = atCenter.filter(t=>t.status==='Registered')
+    .sort((a,b)=> new Date(a.createdAt) - new Date(b.createdAt));
+  if(waiting.length) return {token: waiting[0], stage:'next'};
+  return null;
+}
+
+function avgCycleMinutes(centerId, tokens){
+  const today = todayStr();
+  const done = tokens.filter(t=> t.centerId===centerId && t.status==='Dispatched' && t.createdAt.slice(0,10)===today);
+  if(done.length===0) return 20; // default estimate until real data builds up
+  const totalMins = done.reduce((sum,t)=>{
+    const start = t.history.find(h=>h.status==='Gate_Entry');
+    const end = t.history.find(h=>h.status==='Dispatched');
+    if(!start || !end) return sum;
+    return sum + (new Date(end.at)-new Date(start.at))/60000;
+  },0);
+  return Math.max(5, Math.round(totalMins/done.length));
+}
+
+function estimateWait(myToken, tokens){
+  const queue = tokens.filter(t=>t.centerId===myToken.centerId && t.status!=='Dispatched')
+    .sort((a,b)=>{
+      const aLast = new Date(a.history[a.history.length-1].at);
+      const bLast = new Date(b.history[b.history.length-1].at);
+      return aLast - bLast;
+    });
+  const position = queue.findIndex(t=>t.id===myToken.id);
+  const avg = avgCycleMinutes(myToken.centerId, tokens);
+  return {ahead: Math.max(0, position), etaMinutes: Math.max(0, position) * avg};
+}
+
+function renderNowServing(tokens){
+  const mine = tokens.filter(t=>t.farmerPhone===session.phone);
+  const wrap = document.getElementById('nowServingWrap');
+  if(mine.length===0){ wrap.innerHTML=''; return; }
+
+  const centerIds = [...new Set(mine.map(t=>t.centerId))];
+  wrap.innerHTML = '<div class="serving-panel">' + centerIds.map(cid=>{
+    const center = CENTERS.find(c=>c.id===cid);
+    const serving = nowServingFor(cid, tokens);
+    const myLatest = mine.filter(t=>t.centerId===cid).sort((a,b)=> new Date(b.createdAt)-new Date(a.createdAt))[0];
+    const isMine = serving && serving.token.farmerPhone === session.phone;
+    const open = centerIsOpen(cid);
+    const eta = myLatest.status!=='Dispatched' ? estimateWait(myLatest, tokens) : null;
+    return `<div class="serving-center">
+      <div class="cname" style="display:flex;justify-content:space-between;align-items:center;">
+        <span>${center.name}</span>
+        <span class="status-pill ${open?'open':'closed'}">${open?'Open':'Closed'}</span>
+      </div>
+      <div class="serving-row">
+        <div class="serving-item">
+          <div class="k">Your token</div>
+          <div class="v">${myLatest.id}</div>
+        </div>
+        <div class="serving-item">
+          <div class="k">${serving ? (serving.stage==='serving' ? 'Now serving' : 'Up next') : 'Now serving'}</div>
+          <div class="v ${isMine?'match':''}">${serving ? serving.token.id : '— none in queue —'}</div>
+        </div>
+      </div>
+      ${eta ? `<div class="eta-line">${eta.ahead===0 ? "You're next in line." : eta.ahead+' token(s) ahead of you.'} Estimated wait: <strong>~${eta.etaMinutes} min</strong></div>` : ''}
+      ${isMine ? `<div class="serving-note">That's you — head to the counter.</div>` : ''}
+    </div>`;
+  }).join('') + '</div>';
+}
+
+function renderFarmerRates(tokens){
+  const mine = tokens.filter(t=>t.farmerPhone===session.phone);
+  const wrap = document.getElementById('farmerRateWrap');
+  if(mine.length===0){ wrap.innerHTML=''; return; }
+  const pairs = [...new Set(mine.map(t=>t.centerId+'||'+t.crop))];
+  const tags = pairs.map(p=>{
+    const [centerId, crop] = p.split('||');
+    const rate = getRate(centerId, crop);
+    return rate != null ? `<span class="rate-tag">${crop} <span class="amt">₹${rate}/kg</span></span>` : '';
+  }).filter(Boolean).join('');
+  wrap.innerHTML = tags ? `<div class="panel" style="padding:14px 20px;margin-bottom:22px;"><div class="cname" style="font-size:12px;color:var(--ink-soft);text-transform:uppercase;letter-spacing:0.3px;margin-bottom:8px;">Today's rate</div>${tags}</div>` : '';
+}
+
+function qualityCallouts(t){
+  if(t.moisture==null) return '';
+  const moistureBlock = `<div class="callout ${t.moistureOk?'good':'bad'}">
+      Moisture: ${t.moisture}% — ${t.moistureOk ? 'within acceptable range.' : `above ${MOISTURE_LIMIT}% — this lot may be rejected or need drying.`}
+    </div>`;
+  const weightBlock = `<div class="callout ${t.weightMismatch?'bad':'good'}">${t.weightNote}</div>`;
+  return moistureBlock + weightBlock;
+}
+
+function paymentBlock(t){
+  if(t.status!=='Dispatched') return '';
+  const sid = safeId(t.id);
+  let inner = '';
+  if(t.paymentStatus==='completed'){
+    inner = `<div class="pay-status done">✓ Payment completed — ₹${t.amount} by ${t.paymentMode}${t.paymentMode==='bank' ? ' to a/c ending '+t.bankDetails.acc.slice(-4) : ''} · ${fmtTime(t.paymentCompletedAt)}</div>`;
+  } else if(t.paymentStatus==='pending_processing'){
+    inner = `<div class="pay-status processing">Payment initiated by ${t.paymentMode} — awaiting confirmation from the center.</div>`;
+  } else {
+    inner = `<div class="pay-choice">
+        <button class="action-btn" onclick="choosePayment('${t.id}','bank')">Receive to bank</button>
+        <button class="action-btn" onclick="choosePayment('${t.id}','cash')">Receive as cash</button>
+      </div>
+      <div class="bank-form" id="bankform_${sid}">
+        <label>Account holder name</label>
+        <input id="bname_${sid}">
+        <label>Account number</label>
+        <input id="bacc_${sid}">
+        <label>IFSC code</label>
+        <input id="bifsc_${sid}">
+        <button class="btn secondary" style="margin-top:14px;max-width:160px;" onclick="submitBankDetails('${t.id}')">Submit details</button>
+      </div>`;
+  }
+  return `<div class="pay-block">
+    <div class="pay-amt">₹${t.amount ?? '—'}</div>
+    <div class="token-meta" style="margin-bottom:8px;">${t.crop} · ${t.weight} qtl @ ₹${t.price}/kg</div>
+    ${inner}
+  </div>`;
+}
+
+/* ---------------- 15-minute sound alert ---------------- */
+let audioCtx = null;
+let alertedTokens = new Set();
+function unlockAudio(){
+  if(!audioCtx){
+    try{ audioCtx = new (window.AudioContext||window.webkitAudioContext)(); }catch(e){ audioCtx = null; }
+  }
+}
+function playAlertTone(){
+  if(!audioCtx) return;
+  const chime = (freq, delay)=>{
+    setTimeout(()=>{
+      const o=audioCtx.createOscillator(), g=audioCtx.createGain();
+      o.type='sine'; o.frequency.value=freq;
+      g.gain.setValueAtTime(0.0001, audioCtx.currentTime);
+      g.gain.exponentialRampToValueAtTime(0.22, audioCtx.currentTime+0.04);
+      g.gain.exponentialRampToValueAtTime(0.0001, audioCtx.currentTime+0.5);
+      o.connect(g); g.connect(audioCtx.destination);
+      o.start(); o.stop(audioCtx.currentTime+0.55);
+    }, delay);
+  };
+  chime(880,0); chime(1180,320);
+}
+function checkTurnAlerts(mine, allTokens){
+  mine.filter(t=>t.status!=='Dispatched').forEach(t=>{
+    const eta = estimateWait(t, allTokens);
+    if(eta.etaMinutes<=15 && !alertedTokens.has(t.id)){
+      alertedTokens.add(t.id);
+      playAlertTone();
+      toast('🔔 '+t.id+' — about 15 min to your turn, head to the center');
+    }
+  });
+}
+
+async function renderFarmerTokens(){
+  const tokens = tokensCache.length ? tokensCache : await loadTokens();
+  renderNowServing(tokens);
+  renderFarmerRates(tokens);
+  const mine = tokens.filter(t=>t.farmerPhone===session.phone).sort((a,b)=> new Date(b.createdAt)-new Date(a.createdAt));
+  checkTurnAlerts(mine, tokens);
+  const el = document.getElementById('farmerTokens');
+  if(mine.length===0){ el.innerHTML = '<div class="empty">No tokens yet — book a slot above to get started.</div>'; return; }
+  el.innerHTML = mine.map(t=>{
+    const center = CENTERS.find(c=>c.id===t.centerId);
+    return `<div class="token-card">
+      <div class="token-head">
+        <div>
+          <div class="token-id">${t.id}</div>
+          <div class="token-meta">${t.crop} · ${t.qty} qtl · ${center.name} · slot ${t.slotDate}</div>
+        </div>
+        ${alertPillFor(t)}
+      </div>
+      ${stepperHtml(t)}
+      ${t.grade ? `<div class="token-meta" style="margin-top:10px;">Weighed: ${t.weight} qtl · Grade: ${t.grade}</div>` : ''}
+      ${qualityCallouts(t)}
+      ${paymentBlock(t)}
+    </div>`;
+  }).join('');
+}
+
+/* ---------------- Rendering: officer ---------------- */
+const NEXT_STATE = {Registered:'Gate_Entry', Gate_Entry:'Weighed', Weighed:'Graded', Graded:'Dispatched'};
+const ACTION_LABEL = {Registered:'Mark gate entry', Gate_Entry:'Record weight', Weighed:'Record grade', Graded:'Mark dispatched'};
+
+async function renderOfficerTable(){
+  const tokens = tokensCache.length ? tokensCache : await loadTokens();
+  const mine = tokens.filter(t=>t.centerId===session.centerId)
+    .sort((a,b)=>{
+      const aLast = new Date(a.history[a.history.length-1].at);
+      const bLast = new Date(b.history[b.history.length-1].at);
+      return aLast - bLast; // oldest waiting first
+    });
+
+  // stats
+  const total = mine.length;
+  const inProgress = mine.filter(t=>t.status!=='Dispatched').length;
+  const delayed = mine.filter(t=> t.status!=='Dispatched' && (Date.now()-new Date(t.history[t.history.length-1].at).getTime())/60000 > SLA_MINUTES).length;
+  const dispatched = mine.filter(t=>t.status==='Dispatched').length;
+  document.getElementById('statsRow').innerHTML = `
+    <div class="stat"><div class="num">${total}</div><div class="lab">Tokens today</div></div>
+    <div class="stat"><div class="num">${inProgress}</div><div class="lab">In progress</div></div>
+    <div class="stat ${delayed>0?'alertnum':''}"><div class="num">${delayed}</div><div class="lab">Past SLA (${SLA_MINUTES}m)</div></div>
+    <div class="stat"><div class="num">${dispatched}</div><div class="lab">Dispatched</div></div>
+  `;
+
+  const body = document.getElementById('officerTableBody');
+  const emptyEl = document.getElementById('officerEmpty');
+  if(mine.length===0){ body.innerHTML=''; emptyEl.style.display='block'; return; }
+  emptyEl.style.display='none';
+
+  body.innerHTML = mine.map(t=>{
+    const last = t.history[t.history.length-1];
+    const mins = Math.round((Date.now()-new Date(last.at).getTime())/60000);
+    const delayedRow = t.status!=='Dispatched' && mins > SLA_MINUTES;
+    const sid = safeId(t.id);
+
+    let payCell = '<span style="color:var(--ink-soft);font-size:12px;">—</span>';
+    let actionCell = '—';
+
+    if(t.status==='Registered'){
+      actionCell = `<button class="action-btn" onclick="advanceSimple('${t.id}')">Mark gate entry</button>`;
+    } else if(t.status==='Gate_Entry'){
+      actionCell = `<div class="row-form">
+        <input class="row-input" type="number" id="w_${sid}" placeholder="Wt qtl" value="${t.qty}">
+        <input class="row-input" type="number" id="m_${sid}" placeholder="Moist %" value="13">
+        <button class="action-btn" onclick="recordWeight('${t.id}')">Record</button>
+      </div>`;
+    } else if(t.status==='Weighed'){
+      actionCell = `<div class="row-form">
+        <select id="g_${sid}">
+          <option value="A">Grade A</option>
+          <option value="B">Grade B</option>
+          <option value="C">Grade C</option>
+        </select>
+        <button class="action-btn" onclick="recordGrade('${t.id}')">Record</button>
+      </div>`;
+    } else if(t.status==='Graded'){
+      actionCell = `<button class="action-btn" onclick="advanceSimple('${t.id}')">Mark dispatched</button>`;
+    } else if(t.status==='Dispatched'){
+      if(t.paymentStatus==='completed'){
+        payCell = '<span class="pill ok">Paid ('+t.paymentMode+')</span>';
+        actionCell = '—';
+      } else if(t.paymentStatus==='pending_processing'){
+        payCell = '<span class="pill mid">'+t.paymentMode+' — processing</span>';
+        actionCell = `<button class="action-btn" onclick="markPaymentComplete('${t.id}')">Mark payment complete</button>`;
+      } else {
+        payCell = '<span class="pill mid">Awaiting farmer</span>';
+        actionCell = '—';
+      }
+    }
+
+    return `<tr>
+      <td class="mono">${t.id}</td>
+      <td>${t.farmerName}<br><span style="color:var(--ink-soft);font-size:12px;">${t.farmerPhone}</span></td>
+      <td>${t.crop}<br><span style="color:var(--ink-soft);font-size:12px;">${t.qty} qtl</span></td>
+      <td>${alertPillFor(t)}<br><span style="font-size:12px;color:var(--ink-soft);">${STATE_LABELS[t.status]}</span></td>
+      <td style="${delayedRow?'color:var(--red);font-weight:600;':''}">${mins} min</td>
+      <td>${payCell}</td>
+      <td>${actionCell}</td>
+    </tr>`;
+  }).join('');
+}
+
+async function advanceSimple(tokenId){
+  const tokens = await loadTokens();
+  const t = tokens.find(x=>x.id===tokenId);
+  if(!t) return;
+  const next = NEXT_STATE[t.status];
+  if(!next) return;
+
+  if(next==='Dispatched'){
+    await loadRates();
+    const rate = getRate(t.centerId, t.crop);
+    if(rate == null){
+      toast("Set today's rate for "+t.crop+" before dispatching");
+      return;
+    }
+    t.price = rate;
+    t.amount = Math.round(t.weight * 100 * rate); // weight in quintals -> kg
+    t.paymentStatus = 'pending_choice';
+  }
+  t.status = next;
+  t.history.push({status:next, at:new Date().toISOString()});
+  await saveTokens(tokens);
+  toast(t.id+' → '+STATE_LABELS[next]);
+  renderOfficerTable();
+}
+
+async function recordWeight(tokenId){
+  const sid = safeId(tokenId);
+  const w = Number(document.getElementById('w_'+sid).value);
+  const m = Number(document.getElementById('m_'+sid).value);
+  if(!w || w<=0){ toast('Enter a valid weight'); return; }
+  if(m==='' || isNaN(m)){ toast('Enter a valid moisture reading'); return; }
+
+  const tokens = await loadTokens();
+  const t = tokens.find(x=>x.id===tokenId);
+  if(!t) return;
+
+  t.weight = w;
+  t.moisture = m;
+  t.moistureOk = m <= MOISTURE_LIMIT;
+  const diff = Math.abs(w - t.qty) / t.qty;
+  t.weightMismatch = diff > WEIGHT_TOLERANCE;
+  t.weightNote = t.weightMismatch
+    ? `Recorded weight (${w} qtl) doesn't match what you entered (${t.qty} qtl).`
+    : `Recorded weight matches what you entered.`;
+
+  t.status = 'Weighed';
+  t.history.push({status:'Weighed', at:new Date().toISOString()});
+  await saveTokens(tokens);
+  toast(t.id+' → Weighed');
+  renderOfficerTable();
+}
+
+async function recordGrade(tokenId){
+  const sid = safeId(tokenId);
+  const g = document.getElementById('g_'+sid).value;
+  const tokens = await loadTokens();
+  const t = tokens.find(x=>x.id===tokenId);
+  if(!t) return;
+  t.grade = g;
+  t.status = 'Graded';
+  t.history.push({status:'Graded', at:new Date().toISOString()});
+  await saveTokens(tokens);
+  toast(t.id+' → Graded');
+  renderOfficerTable();
+}
+
+async function markPaymentComplete(tokenId){
+  const tokens = await loadTokens();
+  const t = tokens.find(x=>x.id===tokenId);
+  if(!t) return;
+  t.paymentStatus = 'completed';
+  t.paymentCompletedAt = new Date().toISOString();
+  await saveTokens(tokens);
+  toast(t.id+' payment marked complete');
+  renderOfficerTable();
+}
+
+async function choosePayment(tokenId, mode){
+  if(mode==='bank'){
+    const form = document.getElementById('bankform_'+safeId(tokenId));
+    if(form) form.classList.add('show');
+    return;
+  }
+  const tokens = await loadTokens();
+  const t = tokens.find(x=>x.id===tokenId);
+  if(!t) return;
+  t.paymentMode = 'cash';
+  t.paymentStatus = 'pending_processing';
+  await saveTokens(tokens);
+  toast('Payment set to cash — collect at the center');
+  renderFarmerTokens();
+}
+
+async function submitBankDetails(tokenId){
+  const sid = safeId(tokenId);
+  const name = document.getElementById('bname_'+sid).value.trim();
+  const acc = document.getElementById('bacc_'+sid).value.trim();
+  const ifsc = document.getElementById('bifsc_'+sid).value.trim();
+  if(!name || !acc || !ifsc){ toast('Fill in all bank details'); return; }
+  const tokens = await loadTokens();
+  const t = tokens.find(x=>x.id===tokenId);
+  if(!t) return;
+  t.paymentMode = 'bank';
+  t.bankDetails = {name, acc, ifsc};
+  t.paymentStatus = 'pending_processing';
+  await saveTokens(tokens);
+  toast('Bank details submitted');
+  renderFarmerTokens();
+}
+function safeId(tokenId){ return tokenId.replace(/[^a-zA-Z0-9]/g,''); }
+
+/* ---------------- Shared ---------------- */
+async function refresh(){
+  await loadTokens();
+  await loadRates();
+  await loadCenterStatus();
+  if(session.role==='farmer'){
+    renderFarmerTokens();
+  } else if(session.role==='officer'){
+    renderStatusPanel();
+    renderRatePanel();
+    renderOfficerTable();
+  } else if(session.role==='admin'){
+    await loadStaffAccounts();
+    renderStaffList();
+  }
+}
+setInterval(()=>{ if(session) refresh(); }, 15000); // periodic refresh so both sides stay in sync
+
+function toast(msg){
+  const el=document.getElementById('toast');
+  el.textContent=msg;
+  el.classList.add('show');
+  setTimeout(()=>el.classList.remove('show'), 2200);
+}
+</script>
+</body>
+</html>

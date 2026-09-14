@@ -6,6 +6,7 @@
 <title>KisaanConnect — Procurement Ledger</title>
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link href="https://fonts.googleapis.com/css2?family=Fraunces:opsz,wght@9..144,400;9..144,500;9..144,600;9..144,700&family=IBM+Plex+Sans:wght@400;500;600;700&family=IBM+Plex+Mono:wght@500&display=swap" rel="stylesheet">
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
 <style>
   :root{
     --paper: #DCE8D2;
@@ -402,39 +403,45 @@ let statusCache = {}; // { centerId: 'open'|'closed' }
 let staffCache = []; // [{username, passHash, name, centerId}]
 let adminAuthCache = {passwordSet:false, passHash:null, credentialId:null};
 
-/* ---------------- Storage polyfill ----------------
-   window.storage only exists inside a Claude.ai artifact. When this file is
-   opened directly as a standalone website (double-clicked, hosted, etc.),
-   that API is missing, so every save was silently failing and anything you
-   created (like a staff account) only lived in memory until you logged out
-   or refreshed. This fills in a real, persistent localStorage-backed
-   implementation with the same shape whenever window.storage isn't already
-   provided by the host environment. */
-if(typeof window.storage === 'undefined'){
-  window.storage = {
-    _prefix: 'kisaanconnect_',
-    async get(key){
-      const raw = localStorage.getItem(this._prefix+key);
-      if(raw===null){ throw new Error('key not found: '+key); }
-      return {key, value: raw};
-    },
-    async set(key, value){
-      localStorage.setItem(this._prefix+key, value);
-      return {key, value};
-    },
-    async delete(key){
-      localStorage.removeItem(this._prefix+key);
-      return {key, deleted:true};
-    },
-    async list(prefix){
-      const keys = Object.keys(localStorage)
-        .filter(k=>k.startsWith(this._prefix))
-        .map(k=>k.slice(this._prefix.length))
-        .filter(k=> !prefix || k.startsWith(prefix));
-      return {keys, prefix};
-    }
-  };
-}
+/* ---------------- Storage: Supabase ----------------
+   All app data (staff accounts, tokens, rates, admin password) is stored as
+   key/value rows in one Supabase table called "kv_store". This means the
+   same data is visible from any device or browser, unlike localStorage.
+
+   SETUP: paste your Project URL and anon public key below (Supabase
+   dashboard -> Settings -> API), and make sure you've run the kv_store
+   table + policy SQL in the Supabase SQL editor first. */
+const SUPABASE_URL = 'https://wbsxglajbgyhpokefpla.supabase.co';
+const SUPABASE_ANON_KEY = 'sb_publishable_9Un8r9DXmgMHAE8Vs05RRA_-n5hKB7A';
+const supabaseClient = window.supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
+
+window.storage = {
+  async get(key){
+    const { data, error } = await supabaseClient
+      .from('kv_store').select('value').eq('key', key).maybeSingle();
+    if(error) throw error;
+    if(!data) throw new Error('key not found: '+key);
+    return {key, value: data.value};
+  },
+  async set(key, value){
+    const { error } = await supabaseClient
+      .from('kv_store').upsert({key, value, updated_at: new Date().toISOString()});
+    if(error) throw error;
+    return {key, value};
+  },
+  async delete(key){
+    const { error } = await supabaseClient.from('kv_store').delete().eq('key', key);
+    if(error) throw error;
+    return {key, deleted:true};
+  },
+  async list(prefix){
+    let query = supabaseClient.from('kv_store').select('key');
+    if(prefix) query = query.like('key', prefix+'%');
+    const { data, error } = await query;
+    if(error) throw error;
+    return {keys: (data||[]).map(d=>d.key), prefix};
+  }
+};
 
 /* ---------------- Init ---------------- */
 function populateSelects(){

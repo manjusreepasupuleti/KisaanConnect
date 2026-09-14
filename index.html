@@ -402,6 +402,40 @@ let statusCache = {}; // { centerId: 'open'|'closed' }
 let staffCache = []; // [{username, passHash, name, centerId}]
 let adminAuthCache = {passwordSet:false, passHash:null, credentialId:null};
 
+/* ---------------- Storage polyfill ----------------
+   window.storage only exists inside a Claude.ai artifact. When this file is
+   opened directly as a standalone website (double-clicked, hosted, etc.),
+   that API is missing, so every save was silently failing and anything you
+   created (like a staff account) only lived in memory until you logged out
+   or refreshed. This fills in a real, persistent localStorage-backed
+   implementation with the same shape whenever window.storage isn't already
+   provided by the host environment. */
+if(typeof window.storage === 'undefined'){
+  window.storage = {
+    _prefix: 'kisaanconnect_',
+    async get(key){
+      const raw = localStorage.getItem(this._prefix+key);
+      if(raw===null){ throw new Error('key not found: '+key); }
+      return {key, value: raw};
+    },
+    async set(key, value){
+      localStorage.setItem(this._prefix+key, value);
+      return {key, value};
+    },
+    async delete(key){
+      localStorage.removeItem(this._prefix+key);
+      return {key, deleted:true};
+    },
+    async list(prefix){
+      const keys = Object.keys(localStorage)
+        .filter(k=>k.startsWith(this._prefix))
+        .map(k=>k.slice(this._prefix.length))
+        .filter(k=> !prefix || k.startsWith(prefix));
+      return {keys, prefix};
+    }
+  };
+}
+
 /* ---------------- Init ---------------- */
 function populateSelects(){
   const bCrop=document.getElementById('bCrop'), bCenter=document.getElementById('bCenter'), rCrop=document.getElementById('rCrop'), sCenter=document.getElementById('sCenter');
